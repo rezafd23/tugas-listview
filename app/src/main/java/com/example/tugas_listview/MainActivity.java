@@ -2,6 +2,10 @@ package com.example.tugas_listview;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,34 +16,35 @@ import android.widget.ListView;
 
 import com.example.tugas_listview.adapter.BeritaAdapter;
 import com.example.tugas_listview.model.BeritaModel;
+import com.example.tugas_listview.viewmodel.BeritaViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private ArrayList<BeritaModel> arrTemp =new ArrayList<>();
     private FloatingActionButton fab;
-    private ListView list_berita;
+    private RecyclerView list_berita;
     private static int CODE_MAIN_ACTIVITY=72;
     private BeritaAdapter beritaAdapter;
+    private BeritaViewModel beritaViewModel;
+    private List<BeritaModel> beritaList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        initData();
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(MainActivity.this, RegisterActivity.class);
-                i.putExtra("id", "CEK");
-                startActivityForResult(i, CODE_MAIN_ACTIVITY);
+                Intent intent = new Intent(MainActivity.this,RegisterActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -47,16 +52,11 @@ public class MainActivity extends AppCompatActivity {
     private void initView(){
         fab=findViewById(R.id.fab);
         list_berita=findViewById(R.id.list_berita);
-        beritaAdapter = new BeritaAdapter(getApplicationContext(),arrTemp);
-        list_berita.setAdapter(beritaAdapter);
-        beritaAdapter.notifyDataSetChanged();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        Log.v("request Code: ",String.valueOf(requestCode));
-//        Log.v("resutl: ","isinya: "+data.getStringExtra("data"));
         parse(data.getStringExtra("data"));
 
     }
@@ -67,5 +67,26 @@ public class MainActivity extends AppCompatActivity {
         Log.v("IsiModel: ",model.getTitle());
         arrTemp.add(model);
         beritaAdapter.notifyDataSetChanged();
+    }
+
+    private void initData(){
+        if (beritaAdapter==null){
+            beritaAdapter=new BeritaAdapter(MainActivity.this,arrTemp);
+            list_berita.setLayoutManager(new LinearLayoutManager(this));
+            list_berita.setAdapter(beritaAdapter);
+            list_berita.setItemAnimator(new DefaultItemAnimator());
+            list_berita.setNestedScrollingEnabled(true);
+        } else {
+            beritaAdapter.notifyDataSetChanged();
+        }
+        beritaViewModel = ViewModelProviders.of(this).get(BeritaViewModel.class);
+
+        beritaViewModel.init();
+        beritaViewModel.getBerita().observe(this,beritaResponse -> {
+            beritaList=beritaResponse.getData();
+            arrTemp.clear();
+            arrTemp.addAll(beritaList);
+            beritaAdapter.notifyDataSetChanged();
+        });
     }
 }

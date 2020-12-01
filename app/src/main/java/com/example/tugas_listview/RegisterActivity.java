@@ -4,14 +4,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.tugas_listview.model.BeritaModel;
+import com.example.tugas_listview.viewmodel.BeritaViewModel;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -26,6 +29,9 @@ public class RegisterActivity extends AppCompatActivity {
     private ArrayList<BeritaModel> arrayList = new ArrayList<>();
     private AppCompatEditText et_title,et_category,et_url;
     private static String json="";
+    private BeritaViewModel beritaViewModel;
+    private BeritaModel beritaModel;
+    private static String message="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,22 +44,20 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 saveData();
-                JSONArray jsonArray = new JSONArray();
-                jsonArray.put(arrayList);
-                Log.v("Isi Array: ",jsonArray.toString());
-                Intent i = getIntent();
-                i.putExtra("data", json);
-                setResult(RESULT_OK, i);
-                finish();
+                Intent intent = new Intent(RegisterActivity.this,MainActivity.class);
+                startActivity(intent);
+
             }
         });
     }
 
     private void initView(){
+        beritaModel = new BeritaModel();
         btn_save=findViewById(R.id.btn_save);
         et_title=findViewById(R.id.et_title);
         et_category=findViewById(R.id.et_category);
         et_url=findViewById(R.id.et_url);
+        beritaViewModel= ViewModelProviders.of(this).get(BeritaViewModel.class);
     }
 
     private void saveData(){
@@ -64,9 +68,13 @@ public class RegisterActivity extends AppCompatActivity {
         BeritaModel model = new BeritaModel();
         model.setTitle(title);
         model.setCategory(category);
-        model.setImage(url);
-        Gson gson = new Gson();
-        json=gson.toJson(model);
+        model.setUrl(url);
+
+        beritaViewModel.addBerita(model).observe(this,beritaResponse -> {
+            message=beritaResponse.getMessage();
+            Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
+            finish();
+        });
 
     }
 

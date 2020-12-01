@@ -3,11 +3,28 @@ package com.example.tugas_listview.model;
 import java.io.Serializable;
 
 public class BeritaModel implements Serializable {
+    private int id;
     private String title;
     private String category;
-    private String image;
+    private String url;
 
     public BeritaModel() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getTitle() {
@@ -26,11 +43,4 @@ public class BeritaModel implements Serializable {
         this.category = category;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
 }
